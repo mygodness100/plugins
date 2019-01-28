@@ -1,0 +1,20 @@
+package ${dbConfig.package_entity};
+
+import java.io.Serializable;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@NoArgsConstructor
+@Setter
+public class ${dbTable.tableAlias} implements Serializable{
+
+	private static final long serialVersionUID = 1L;
+
+#foreach($column in $dbTable.columns)
+	private $column.javaType $column.columnAlias;
+	
+#end
+}

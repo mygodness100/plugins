@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+	<properties resource="generator/generator.properties" />
+
+	<context id="demo" defaultModelType="flat" targetRuntime="MyBatis3Simple">
+
+		<property name="beginningDelimiter" value="`" />
+		<property name="endingDelimiter" value="`" />
+
+		<!-- 通用 Entity 插件 -->
+		<plugin type="com.wy.plugins.EntityPlugin">
+			<property name="usePersistence" value="${bean.usePersistence}" />
+			<!-- <property name="baseEntity" value="${base.entity}"/> -->
+			<property name="lombok" value="${lombok.type}" />
+			<property name="forceAnnotation" value="true" />
+		</plugin>
+
+		<!-- 通用 Mapper 插件 -->
+		<plugin type="com.wy.plugins.MapperPlugin">
+			<property name="baseMappers" value="${base.mappers}" />
+			<property name="targetProject" value="${target.project.main}" />
+			<property name="targetPackage" value="${target.package.mappers}" />
+		</plugin>
+
+		<!-- 生成 Service 类 -->
+		<plugin type="com.wy.plugins.ServicePlugin">
+			<!-- <property name="baseService" value="${base.service}" /> -->
+			<property name="targetProject" value="${target.project.main}" />
+			<property name="targetPackage" value="${target.package.service}" />
+		</plugin>
+
+		<!-- 生成controller的类 -->
+		<plugin type="com.wy.plugins.CrlPlugin">
+			<!-- <property name="baseCrl" value="${base.controller}" /> -->
+			<property name="targetProject" value="${target.project.main}" />
+			<property name="targetPackage" value="${target.package.crl}" />
+			<property name="targetPackageService" value="${target.package.service}" />
+		</plugin>
+
+		<!-- xml中通用语句生成 -->
+		<plugin type="com.wy.plugins.CommonMethodPlugin" />
+
+		<!-- 读取数据库表的注释，生成 Model 的注释 -->
+		<commentGenerator type="com.wy.plugins.CommentPlugin" />
+
+		<!-- 连接数据库配置 -->
+		<jdbcConnection driverClass="${jdbc.driverClass}"
+			connectionURL="${jdbc.url}" userId="${jdbc.user}" password="${jdbc.password}" />
+
+		<javaTypeResolver
+			type="org.mybatis.generator.internal.types.JavaTypeResolverDefaultImpl">
+			<property name="forceBigDecimals" value="false" />
+		</javaTypeResolver>
+
+		<javaModelGenerator targetPackage="${target.package.entity}"
+			targetProject="${target.project.main}">
+			<property name="constructorBased" value="false" />
+			<property name="enableSubPackages" value="false" />
+			<property name="immutable" value="false" />
+			<property name="trimStrings" value="true" />
+		</javaModelGenerator>
+		
+		<sqlMapGenerator targetPackage="${target.resource.mapper}"
+			targetProject="${target.project.mapper}" />
+
+		<javaClientGenerator type="XMLMAPPER" targetPackage="${target.package.mapper}"
+			targetProject="${target.project.main}" />
+		
+		<table tableName="ti_button" domainObjectName="Button">
+			<generatedKey column="button_id" sqlStatement="JDBC" />
+		</table>
+		<table tableName="ti_depart" domainObjectName="Depart">
+			<generatedKey column="depart_id" sqlStatement="JDBC" />
+		</table>
+		<table tableName="ti_dictionary" domainObjectName="Dictionary">
+			<generatedKey column="dic_id" sqlStatement="JDBC" />
+		</table>
+		<table tableName="ti_menu" domainObjectName="Munu">
+			<generatedKey column="menu_id" sqlStatement="JDBC" />
+		</table>
+		<table tableName="ti_related_file" domainObjectName="RelatedFile">
+			<generatedKey column="file_id" sqlStatement="JDBC" />
+		</table>
+		<table tableName="ti_role" domainObjectName="Role">
+			<generatedKey column="role_id" sqlStatement="JDBC" />
+		</table>
+		<table tableName="ti_user" domainObjectName="User">
+			<generatedKey column="user_id" sqlStatement="JDBC" />
+		</table>
+		<table tableName="tr_role_button" domainObjectName="RoleButton">
+		</table>
+		<table tableName="tr_role_menu" domainObjectName="RoleMenu">
+		</table>
+		<table tableName="tr_user_role" domainObjectName="UserRole">
+		</table>
+	</context>
+</generatorConfiguration>

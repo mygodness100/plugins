@@ -1,0 +1,93 @@
+#若是使用mybatis,可使用该模版生成对应的xml文件
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wy.springboot.core.sys.dao.SysUserDao">
+
+	<select id="queryObject" resultType="com.wy.springboot.core.sys.entity.SysUserEntity">
+		select * from sys_user where user_id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.wy.springboot.core.sys.entity.SysUserEntity">
+		select u.* from sys_user u
+		<where>
+			<if test="username != null and username.trim() != ''">
+				and u.`username` like concat('%',#{username},'%')
+			</if>
+		</where>
+		<choose>
+			<when test="orderValue != null and orderValue.trim() != ''">
+				order by u.${orderValue} ${order}
+			</when>
+			<otherwise>
+				order by u.user_id desc
+			</otherwise>
+		</choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+
+
+	<select id="queryTotal" resultType="int">
+		select count(*) from sys_user u
+		<where>
+			<if test="username != null and username.trim() != ''">
+				and u.`username` like concat('%',#{username},'%')
+			</if>
+		</where>
+	</select>
+
+
+	<insert id="save" parameterType="com.wy.springboot.core.sys.entity.SysUserEntity" useGeneratedKeys="true" keyProperty="userId">
+		insert into sys_user
+		(
+			`user_id`, 
+			`username`, 
+			`password`,
+			`salt`,
+			`email`, 
+			`mobile`, 
+			`status`,
+			`dept_id`,
+			`create_time`
+		)
+		values
+		(
+			#{userId}, 
+			#{username}, 
+			#{password},
+			#{salt},
+			#{email}, 
+			#{mobile}, 
+			#{status},
+			#{deptId},
+			#{createTime}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.wy.springboot.core.sys.entity.SysUserEntity">
+		update sys_user
+		<set>
+			<if test="username != null">`username` = #{username}, </if>
+			<if test="password != null">`password` = #{password}, </if>
+			<if test="email != null">`email` = #{email}, </if>
+			<if test="mobile != null">`mobile` = #{mobile}, </if>
+			<if test="status != null">`status` = #{status}, </if>
+			<if test="deptId != null">`dept_id` = #{deptId}, </if>
+		</set>
+		where user_id = #{userId}
+	</update>
+
+	<update id="updatePassword" parameterType="map">
+		update sys_user set `password` = #{newPassword}
+			where user_id = #{userId} and password = #{password}
+	</update>
+
+	<delete id="deleteBatch">
+		delete from sys_user where user_id in
+		<foreach item="userId" collection="array" open="(" separator="," close=")">
+			#{userId}
+		</foreach>
+	</delete>
+</mapper>

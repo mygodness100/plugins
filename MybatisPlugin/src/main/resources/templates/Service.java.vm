@@ -1,0 +1,19 @@
+package com.wy.sqlserver.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.wy.service.BaseService;
+import com.wy.sqlserver.dao.UsersDao;
+import com.wy.sqlserver.entity.Users;
+
+@Service
+public class UsersService extends BaseService<Users> {
+	@Autowired
+	private UsersDao usersDao;
+
+	@Override
+	public UsersDao getDao() {
+		return usersDao;
+	}
+}
