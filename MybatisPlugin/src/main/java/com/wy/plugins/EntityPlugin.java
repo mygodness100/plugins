@@ -20,15 +20,10 @@ import com.wy.common.Constant;
 
 /**
  * 自定义根据数据库表生成实体类 FIXME
- * 
  * @author paradiseWy 2018年8月30日
  */
 public class EntityPlugin extends PluginAdapter {
 
-	// 开始的分隔符,例如 mysql 为 `,sql server 为 [
-	private String beginningDelimiter = "";
-	// 结束的分隔符,例如 mysql 为 `,sql server 为 ]
-	private String endingDelimiter = "";
 	// caseSensitive 默认 false,当数据库表名区分大小写时,可以将该属性设置为 true
 	private boolean caseSensitive = false;
 	// 数据库模式
@@ -43,8 +38,6 @@ public class EntityPlugin extends PluginAdapter {
 	private String baseEntity;
 
 	private FullyQualifiedJavaType serializable;
-	private FullyQualifiedJavaType gwtSerializable;
-	private boolean addGWTInterface;
 	private boolean suppressJavaInterface;
 
 	enum LombokType {
@@ -66,37 +59,24 @@ public class EntityPlugin extends PluginAdapter {
 		context.setCommentGeneratorConfiguration(configuration);
 		// 支持 oracle 获取注释 #114
 		context.getJdbcConnectionConfiguration().addProperty("remarksReporting", "true");
+
+		// 获得所有表的集合,可结合数据库,不必在xml配置中写出所有表,在另外的文件中批量设置表
+		// FIXME
+		// this.context.getTableConfigurations();
 	}
 
 	@Override
 	public void setProperties(Properties properties) {
 		super.setProperties(properties);
-
 		serializable = new FullyQualifiedJavaType("java.io.Serializable");
-		gwtSerializable = new FullyQualifiedJavaType(
-				"com.google.gwt.user.client.rpc.IsSerializable");
 		this.caseSensitive = StringUtility.isTrue(this.properties.getProperty("caseSensitive"));
-		addGWTInterface = Boolean.valueOf(this.properties.getProperty("addGWTInterface"));
 		suppressJavaInterface = Boolean
 				.valueOf(this.properties.getProperty("suppressJavaInterface"));
 
-		this.beginningDelimiter = this.properties.getProperty("beginningDelimiter", "");
-		configuration.addProperty("beginningDelimiter", this.beginningDelimiter);
-		this.endingDelimiter = this.properties.getProperty("endingDelimiter", "");
-		configuration.addProperty("endingDelimiter", this.endingDelimiter);
-		
-		this.schema = this.properties.getProperty("schema","");
-
-		String persistence = this.properties.getProperty("usePersistence");
-		if (StringUtility.isTrue(persistence)) {
-			this.usePersistence = Boolean.valueOf(persistence);
-		}
-
-		String lombok = this.properties.getProperty("lombok");
-		if (StringUtility.stringHasValue(lombok)) {
-			this.lombok = LombokType.valueOf(lombok);
-		}
-
+		this.schema = this.properties.getProperty("schema", "");
+		this.usePersistence = Boolean
+				.valueOf(StringUtility.isTrue(this.properties.getProperty("usePersistence")));
+		this.lombok = LombokType.valueOf(this.properties.getProperty("lombok", "none"));
 		this.baseEntity = this.properties.getProperty("baseEntity");
 	}
 
@@ -105,8 +85,8 @@ public class EntityPlugin extends PluginAdapter {
 		if (StringUtility.stringHasValue(schema)) {
 			nameBuilder.append(schema).append(".");
 		}
-		return nameBuilder.append(beginningDelimiter).append(name).append(endingDelimiter)
-				.toString();
+		return nameBuilder.append(context.getBeginningDelimiter()).append(name)
+				.append(context.getEndingDelimiter()).toString();
 	}
 
 	/**
@@ -143,8 +123,8 @@ public class EntityPlugin extends PluginAdapter {
 			topLevelClass.addAnnotation(new StringBuilder("@Table(name=\"")
 					.append(getDelimiterName(tableName)).append("\"").toString());
 		} else if (StringUtility.stringHasValue(schema)
-				|| StringUtility.stringHasValue(beginningDelimiter)
-				|| StringUtility.stringHasValue(endingDelimiter)) {
+				|| StringUtility.stringHasValue(context.getBeginningDelimiter())
+				|| StringUtility.stringHasValue(context.getEndingDelimiter())) {
 			topLevelClass.addAnnotation(new StringBuilder("@Table(name=\"")
 					.append(getDelimiterName(tableName)).append("\"").toString());
 		} else {
@@ -190,8 +170,8 @@ public class EntityPlugin extends PluginAdapter {
 			if (!introspectedColumn.isNullable()) {
 				field.addAnnotation("@Column(nullable=false)");
 			}
-		} else if (StringUtility.stringHasValue(beginningDelimiter)
-				|| StringUtility.stringHasValue(endingDelimiter)) {
+		} else if (StringUtility.stringHasValue(context.getBeginningDelimiter())
+				|| StringUtility.stringHasValue(context.getEndingDelimiter())) {
 			if (!introspectedColumn.isNullable()) {
 				field.addAnnotation("@Column(nullable=false)");
 			}
@@ -232,49 +212,45 @@ public class EntityPlugin extends PluginAdapter {
 	 */
 	private void handlerLombok(TopLevelClass topLevelClass) {
 		switch (lombok) {
-			case none:
-				break;
-			case simple:
-				topLevelClass.addImportedType("lombok.Getter");
-				topLevelClass.addImportedType("lombok.Setter");
-				topLevelClass.addImportedType("lombok.NoArgsConstructor");
-				topLevelClass.addAnnotation("@Getter");
-				topLevelClass.addAnnotation("@Setter");
-				topLevelClass.addAnnotation("@NoArgsConstructor");
-				break;
-			case accessors:
-				topLevelClass.addImportedType("lombok.Getter");
-				topLevelClass.addImportedType("lombok.Setter");
-				topLevelClass.addImportedType("lombok.NoArgsConstructor");
-				topLevelClass.addImportedType("lombok.experimental.Accessors");
-				topLevelClass.addAnnotation("@Getter");
-				topLevelClass.addAnnotation("@Setter");
-				topLevelClass.addAnnotation("@NoArgsConstructor");
-				topLevelClass.addAnnotation("@Accessors(fluent = true)");
-				break;
-			case builder:
-				topLevelClass.addImportedType("lombok.Getter");
-				topLevelClass.addImportedType("lombok.Setter");
-				topLevelClass.addImportedType("lombok.NoArgsConstructor");
-				topLevelClass.addImportedType("lombok.AllArgsConstructor");
-				topLevelClass.addImportedType("lombok.Builder");
-				topLevelClass.addAnnotation("@Getter");
-				topLevelClass.addAnnotation("@Setter");
-				topLevelClass.addAnnotation("@NoArgsConstructor");
-				topLevelClass.addAnnotation("@AllArgsConstructor");
-				topLevelClass.addAnnotation("@Builder");
-				break;
-			default:
-				break;
+		case none:
+			break;
+		case simple:
+			topLevelClass.addImportedType("lombok.Getter");
+			topLevelClass.addImportedType("lombok.Setter");
+			topLevelClass.addImportedType("lombok.NoArgsConstructor");
+			topLevelClass.addAnnotation("@Getter");
+			topLevelClass.addAnnotation("@Setter");
+			topLevelClass.addAnnotation("@NoArgsConstructor");
+			break;
+		case accessors:
+			topLevelClass.addImportedType("lombok.Getter");
+			topLevelClass.addImportedType("lombok.Setter");
+			topLevelClass.addImportedType("lombok.NoArgsConstructor");
+			topLevelClass.addImportedType("lombok.experimental.Accessors");
+			topLevelClass.addAnnotation("@Getter");
+			topLevelClass.addAnnotation("@Setter");
+			topLevelClass.addAnnotation("@NoArgsConstructor");
+			topLevelClass.addAnnotation("@Accessors(fluent = true)");
+			break;
+		case builder:
+			topLevelClass.addImportedType("lombok.Getter");
+			topLevelClass.addImportedType("lombok.Setter");
+			topLevelClass.addImportedType("lombok.NoArgsConstructor");
+			topLevelClass.addImportedType("lombok.AllArgsConstructor");
+			topLevelClass.addImportedType("lombok.Builder");
+			topLevelClass.addAnnotation("@Getter");
+			topLevelClass.addAnnotation("@Setter");
+			topLevelClass.addAnnotation("@NoArgsConstructor");
+			topLevelClass.addAnnotation("@AllArgsConstructor");
+			topLevelClass.addAnnotation("@Builder");
+			break;
+		default:
+			break;
 		}
 	}
 
 	private void makeSerializable(TopLevelClass topLevelClass,
 			IntrospectedTable introspectedTable) {
-		if (addGWTInterface) {
-			topLevelClass.addImportedType(gwtSerializable);
-			topLevelClass.addSuperInterface(gwtSerializable);
-		}
 
 		if (!suppressJavaInterface) {
 			topLevelClass.addImportedType(serializable);

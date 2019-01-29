@@ -6,7 +6,7 @@
 <generatorConfiguration>
 	<properties resource="generator/generator.properties" />
 
-	<context id="demo" defaultModelType="flat" targetRuntime="MyBatis3">
+	<context id="demo" defaultModelType="flat" targetRuntime="MyBatis3" >
 
 		<property name="beginningDelimiter" value="`" />
 		<property name="endingDelimiter" value="`" />
@@ -45,7 +45,7 @@
 		<plugin type="com.wy.plugins.CommonPlugin" />
 
 		<!-- 读取数据库表的注释，生成 Model 的注释 -->
-		<commentGenerator type="com.wy.plugins.CommentPlugin" />
+		<commentGenerator type="com.wy.plugins.CommentPlugin"  />
 
 		<!-- 连接数据库配置 -->
 		<jdbcConnection driverClass="${jdbc.driverClass}"
