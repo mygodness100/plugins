@@ -6,7 +6,7 @@
 <generatorConfiguration>
 	<properties resource="generator/generator.properties" />
 
-	<context id="demo" defaultModelType="flat" targetRuntime="MyBatis3Simple">
+	<context id="demo" defaultModelType="flat" targetRuntime="MyBatis3">
 
 		<property name="beginningDelimiter" value="`" />
 		<property name="endingDelimiter" value="`" />
@@ -41,8 +41,8 @@
 			<property name="targetPackageService" value="${target.package.service}" />
 		</plugin>
 
-		<!-- xml中通用语句生成 -->
-		<plugin type="com.wy.plugins.CommonMethodPlugin" />
+		<!-- 通用实体类,Mapper,xml生成 -->
+		<plugin type="com.wy.plugins.CommonPlugin" />
 
 		<!-- 读取数据库表的注释，生成 Model 的注释 -->
 		<commentGenerator type="com.wy.plugins.CommentPlugin" />
@@ -63,13 +63,15 @@
 			<property name="immutable" value="false" />
 			<property name="trimStrings" value="true" />
 		</javaModelGenerator>
-		
+
+		<!-- 生成Mapper对应的xml文件地址 -->
 		<sqlMapGenerator targetPackage="${target.resource.mapper}"
 			targetProject="${target.project.mapper}" />
 
+		<!-- 生成的Mapper文件地址 -->
 		<javaClientGenerator type="XMLMAPPER" targetPackage="${target.package.mapper}"
 			targetProject="${target.project.main}" />
-		
+
 		<table tableName="ti_button" domainObjectName="Button">
 			<generatedKey column="button_id" sqlStatement="JDBC" />
 		</table>
@@ -79,7 +81,7 @@
 		<table tableName="ti_dictionary" domainObjectName="Dictionary">
 			<generatedKey column="dic_id" sqlStatement="JDBC" />
 		</table>
-		<table tableName="ti_menu" domainObjectName="Munu">
+		<table tableName="ti_menu" domainObjectName="Menu">
 			<generatedKey column="menu_id" sqlStatement="JDBC" />
 		</table>
 		<table tableName="ti_related_file" domainObjectName="RelatedFile">

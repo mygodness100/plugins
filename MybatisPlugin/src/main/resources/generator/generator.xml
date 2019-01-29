@@ -15,14 +15,14 @@
 	<!-- 在MBG工作的时候,需要额外加载的依赖包location属性指明加载jar/zip包的全路径 (可在Maven插件中配置) <classPathEntry 
 		location="D:/market-dao.jar" /> -->
 
-	<!-- context:生成一组对象的环境 id:必选,上下文id,用于在生成错误时提示 defaultModelType:指定生成对象的样式 
-		1,conditional:默认值,类似hierarchical,若主键中只有一个字段,则合并到实体类中; 2,flat:所有内容(主键,blob)等全部生成在一个对象中; 
-		3,hierarchical:主键生成一个XXKey对象(key class),Blob等单独生成一个对象,其他简单属性在一个对象中(record 
+	<!-- context:生成一组对象的环境 id:必选,上下文id,用于在生成错误时提示 defaultModelType:指定生成对象的样式 1,conditional:默认值,类似hierarchical,若主键中只有一个字段,则合并到实体类中; 
+		2,flat:所有内容(主键,blob)等全部生成在一个对象中; 3,hierarchical:主键生成一个XXKey对象(key class),Blob等单独生成一个对象,其他简单属性在一个对象中(record 
 		class) -->
 	<!-- targetRuntime: 1,MyBatis3:默认的值,生成基于MyBatis3.x以上版本的内容,包括XXXBySample; -->
 	<!-- 2,MyBatis3Simple:类似MyBatis3,只是不生成XXXBySample; -->
 	<!-- 3,introspectedColumnImpl:指定扩展org.mybatis.generator.api.IntrospectedColumn该类的实现类 -->
 	<!-- 4,自定义实现类,需要继承{org.mybatis.generator.codegen.mybatis3.IntrospectedTableMyBatis3Impl}或{org.mybatis.generator.api.IntrospectedTable} -->
+	<!-- 5,MyBatis3DynamicSQL:1.3.6之后新定义的运行环境,不兼容以前的版本的sql,但体积更小,更容易使用 -->
 	<!-- 若需要自定义实现生成mapper.xml文件,可参照com.wy.plugins.IntroTablePlugin -->
 	<context id="demo" defaultModelType="flat" targetRuntime="MyBatis3Simple">
 		<!-- <context id="demo" defaultModelType="flat" targetRuntime="com.wy.plugins.IntroTablePlugin"> -->
@@ -32,8 +32,7 @@
 		<!-- 生成的Java文件的编码,默认与项目一致 -->
 		<property name="javaFileEncoding" value="UTF-8" />
 		<!-- 格式化java代码 -->
-		<property name="javaFormatter"
-			value="org.mybatis.generator.api.dom.DefaultJavaFormatter" />
+		<property name="javaFormatter" value="org.mybatis.generator.api.dom.DefaultJavaFormatter" />
 		<!-- 格式化XML代码 -->
 		<!-- <property name="xmlFormatter" value="org.mybatis.generator.api.dom.DefaultXmlFormatter"/> -->
 
@@ -64,8 +63,7 @@
 		</plugin>
 
 		<!-- 生成实体类中的 toString() 方法 -->
-		<plugin
-			type="com.github.trang.mybatis.generator.plugins.GuavaToStringPlugin" />
+		<plugin type="com.github.trang.mybatis.generator.plugins.GuavaToStringPlugin" />
 
 		<!-- 生成 service 类 -->
 		<plugin type="com.wy.plugins.dao.ServicePlugin">
@@ -130,8 +128,8 @@
 		<!-- 1,ANNOTATEDMAPPER:基于注解的Mapper接口,没有xml文件 -->
 		<!-- 2,MIXEDMAPPER:XML与注解混合(SqlProvider注解方法会被XML替代) -->
 		<!-- 3,XMLMAPPER:所有方法均生成在xml文件中 MyBatis3Simple没有MIXEDMAPPER -->
-		<javaClientGenerator type="XMLMAPPER"
-			targetPackage="${target.package.dao}" targetProject="${target.project.main}" />
+		<javaClientGenerator type="XMLMAPPER" targetPackage="${target.package.dao}"
+			targetProject="${target.project.main}" />
 
 		<!-- 选择一个table来生成相关文件,可以有一个或多个table,必须要有table元素 选择的table会生成以下文件: -->
 		<!-- 1,SQL map文件 -->
@@ -174,8 +172,8 @@
 			<!-- DB2_MF :相当于selectKey的SQL为:SELECT IDENTITY_VAL_LOCAL() FROM SYSIBM.SYSDUMMY1 -->
 			<!-- Derby :相当于selectKey的SQL为:VALUES IDENTITY_VAL_LOCAL() -->
 			<!-- HSQLDB :相当于selectKey的SQL为:CALL IDENTITY() -->
-			<!-- Informix :相当于selectKey的SQL为:select dbinfo('sqlca.sqlerrd1') from 
-				systables where tabid=1 -->
+			<!-- Informix :相当于selectKey的SQL为:select dbinfo('sqlca.sqlerrd1') from systables 
+				where tabid=1 -->
 			<!-- MySql :相当于selectKey的SQL为:SELECT LAST_INSERT_ID() -->
 			<!-- SqlServer :相当于selectKey的SQL为:SELECT SCOPE_IDENTITY() -->
 			<!-- SYBASE :相当于selectKey的SQL为:SELECT @@IDENTITY -->
@@ -185,8 +183,7 @@
 		<table tableName="ti_menu" domainObjectName="Menu" mapperName="Dao">
 			<generatedKey column="menu_id" sqlStatement="JDBC" />
 		</table>
-		<table tableName="tr_user_role" domainObjectName="UserRole"
-			mapperName="Dao">
+		<table tableName="tr_user_role" domainObjectName="UserRole" mapperName="Dao">
 			<generatedKey column="user_id" sqlStatement="JDBC" />
 		</table>
 	</context>

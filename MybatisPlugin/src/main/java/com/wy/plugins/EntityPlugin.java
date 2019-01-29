@@ -31,8 +31,6 @@ public class EntityPlugin extends PluginAdapter {
 	private String endingDelimiter = "";
 	// caseSensitive 默认 false,当数据库表名区分大小写时,可以将该属性设置为 true
 	private boolean caseSensitive = false;
-	// 强制生成注解,默认 false,设置为 true 后一定会生成 @Table 和 @Column 注解
-	private boolean forceAnnotation = true;
 	// 数据库模式
 	private String schema;
 	// 是否使用javax.persistence持久化注解
@@ -77,28 +75,17 @@ public class EntityPlugin extends PluginAdapter {
 		serializable = new FullyQualifiedJavaType("java.io.Serializable");
 		gwtSerializable = new FullyQualifiedJavaType(
 				"com.google.gwt.user.client.rpc.IsSerializable");
-		this.forceAnnotation = StringUtility.isTrue(this.properties.getProperty("forceAnnotation"));
 		this.caseSensitive = StringUtility.isTrue(this.properties.getProperty("caseSensitive"));
 		addGWTInterface = Boolean.valueOf(this.properties.getProperty("addGWTInterface"));
 		suppressJavaInterface = Boolean
 				.valueOf(this.properties.getProperty("suppressJavaInterface"));
 
-		String beginningDelimiter = this.properties.getProperty("beginningDelimiter");
-		if (StringUtility.stringHasValue(beginningDelimiter)) {
-			this.beginningDelimiter = beginningDelimiter;
-		}
+		this.beginningDelimiter = this.properties.getProperty("beginningDelimiter", "");
 		configuration.addProperty("beginningDelimiter", this.beginningDelimiter);
-
-		String endingDelimiter = this.properties.getProperty("endingDelimiter");
-		if (StringUtility.stringHasValue(endingDelimiter)) {
-			this.endingDelimiter = endingDelimiter;
-		}
+		this.endingDelimiter = this.properties.getProperty("endingDelimiter", "");
 		configuration.addProperty("endingDelimiter", this.endingDelimiter);
-
-		String schema = this.properties.getProperty("schema");
-		if (StringUtility.stringHasValue(schema)) {
-			this.schema = schema;
-		}
+		
+		this.schema = this.properties.getProperty("schema","");
 
 		String persistence = this.properties.getProperty("usePersistence");
 		if (StringUtility.isTrue(persistence)) {
@@ -110,29 +97,60 @@ public class EntityPlugin extends PluginAdapter {
 			this.lombok = LombokType.valueOf(lombok);
 		}
 
-		String baseEntity = this.properties.getProperty("baseEntity");
-		if (StringUtility.stringHasValue(baseEntity)) {
-			this.baseEntity = baseEntity;
-		}
+		this.baseEntity = this.properties.getProperty("baseEntity");
 	}
 
-	public String getDelimiterName(String name) {
+	private String getDelimiterName(String name) {
 		StringBuilder nameBuilder = new StringBuilder();
 		if (StringUtility.stringHasValue(schema)) {
 			nameBuilder.append(schema).append(".");
 		}
-		nameBuilder.append(beginningDelimiter);
-		nameBuilder.append(name);
-		nameBuilder.append(endingDelimiter);
-		return nameBuilder.toString();
+		return nameBuilder.append(beginningDelimiter).append(name).append(endingDelimiter)
+				.toString();
 	}
 
 	/**
-	 * 生成带 BLOB 字段的对象
+	 * 生成基础实体类
 	 */
 	@Override
-	public boolean modelRecordWithBLOBsClassGenerated(TopLevelClass topLevelClass,
+	public boolean modelBaseRecordClassGenerated(TopLevelClass topLevelClass,
 			IntrospectedTable introspectedTable) {
+		// 处理lombok注解
+		handlerLombok(topLevelClass);
+		// 获得表名
+		String tableName = introspectedTable.getFullyQualifiedTableNameAtRuntime();
+		// 如果包含空格,或者需要分隔符
+		if (StringUtility.stringContainsSpace(tableName)) {
+			tableName = context.getBeginningDelimiter() + tableName + context.getEndingDelimiter();
+		}
+
+		// 如果有baseentity,继承baseentity
+		if (StringUtility.stringHasValue(baseEntity)) {
+			topLevelClass.setSuperClass(baseEntity + "<"
+					+ introspectedTable.getFullyQualifiedTable().getDomainObjectName() + ">");
+		}
+
+		if (!usePersistence) {
+			return true;
+		}
+		// 添加@Table注解
+		topLevelClass.addImportedType("javax.persistence.Table");
+		// 是否忽略大小写,对于区分大小写的数据库,会有用
+		if (caseSensitive && !topLevelClass.getType().getShortName().equals(tableName)) {
+			topLevelClass.addAnnotation(new StringBuilder("@Table(name=\"")
+					.append(getDelimiterName(tableName)).append("\"").toString());
+		} else if (!topLevelClass.getType().getShortName().equalsIgnoreCase(tableName)) {
+			topLevelClass.addAnnotation(new StringBuilder("@Table(name=\"")
+					.append(getDelimiterName(tableName)).append("\"").toString());
+		} else if (StringUtility.stringHasValue(schema)
+				|| StringUtility.stringHasValue(beginningDelimiter)
+				|| StringUtility.stringHasValue(endingDelimiter)) {
+			topLevelClass.addAnnotation(new StringBuilder("@Table(name=\"")
+					.append(getDelimiterName(tableName)).append("\"").toString());
+		} else {
+			topLevelClass.addAnnotation(new StringBuilder("@Table(name=\"")
+					.append(getDelimiterName(tableName)).append("\"").toString());
+		}
 		return true;
 	}
 
@@ -146,9 +164,6 @@ public class EntityPlugin extends PluginAdapter {
 		// 若不使用持久化组件,直接返回true
 		if (!usePersistence) {
 			return true;
-		}
-		if (field.isTransient()) {
-			field.addAnnotation("@Transient");
 		}
 		// 判断表中的主键
 		for (IntrospectedColumn column : introspectedTable.getPrimaryKeyColumns()) {
@@ -174,21 +189,15 @@ public class EntityPlugin extends PluginAdapter {
 		if (!column.equals(introspectedColumn.getJavaProperty())) {
 			if (!introspectedColumn.isNullable()) {
 				field.addAnnotation("@Column(nullable=false)");
-			} else {
-				field.addAnnotation("@Column");
 			}
 		} else if (StringUtility.stringHasValue(beginningDelimiter)
 				|| StringUtility.stringHasValue(endingDelimiter)) {
 			if (!introspectedColumn.isNullable()) {
 				field.addAnnotation("@Column(nullable=false)");
-			} else {
-				field.addAnnotation("@Column");
 			}
-		} else if (forceAnnotation) {
+		} else {
 			if (!introspectedColumn.isNullable()) {
 				field.addAnnotation("@Column(nullable=false)");
-			} else {
-				field.addAnnotation("@Column");
 			}
 		}
 		// 若从数据库发现主键自增
@@ -213,49 +222,7 @@ public class EntityPlugin extends PluginAdapter {
 			field.addAnnotation("@GeneratedValue(strategy = GenerationType.IDENTITY, generator = \""
 					+ sql + "\")");
 		}
-		return true;
-	}
-
-	/**
-	 * 生成基础实体类
-	 */
-	@Override
-	public boolean modelBaseRecordClassGenerated(TopLevelClass topLevelClass,
-			IntrospectedTable introspectedTable) {
-		// 处理lombok注解
-		handlerLombok(topLevelClass);
-		// 获得表名
-		String tableName = introspectedTable.getFullyQualifiedTableNameAtRuntime();
-		// 如果包含空格,或者需要分隔符,需要完善
-		if (StringUtility.stringContainsSpace(tableName)) {
-			tableName = context.getBeginningDelimiter() + tableName + context.getEndingDelimiter();
-		}
-
-		// 如果有baseentity,继承baseentity
-		if (StringUtility.stringHasValue(baseEntity)) {
-			topLevelClass.setSuperClass(baseEntity + "<"
-					+ introspectedTable.getFullyQualifiedTable().getDomainObjectName() + ">");
-		}
 		makeSerializable(topLevelClass, introspectedTable);
-
-		if (!usePersistence) {
-			return true;
-		}
-		// 添加@Table注解
-		topLevelClass.addImportedType("javax.persistence.Table");
-
-		// 是否忽略大小写,对于区分大小写的数据库,会有用
-		if (caseSensitive && !topLevelClass.getType().getShortName().equals(tableName)) {
-			topLevelClass.addAnnotation("@Table(name=\"" + getDelimiterName(tableName) + "\")");
-		} else if (!topLevelClass.getType().getShortName().equalsIgnoreCase(tableName)) {
-			topLevelClass.addAnnotation("@Table(name=\"" + getDelimiterName(tableName) + "\")");
-		} else if (StringUtility.stringHasValue(schema)
-				|| StringUtility.stringHasValue(beginningDelimiter)
-				|| StringUtility.stringHasValue(endingDelimiter)) {
-			topLevelClass.addAnnotation("@Table(name=\"" + getDelimiterName(tableName) + "\")");
-		} else if (forceAnnotation) {
-			topLevelClass.addAnnotation("@Table(name=\"" + getDelimiterName(tableName) + "\")");
-		}
 		return true;
 	}
 
@@ -321,11 +288,11 @@ public class EntityPlugin extends PluginAdapter {
 			field.setType(new FullyQualifiedJavaType("long"));
 			field.setVisibility(JavaVisibility.PRIVATE);
 			context.getCommentGenerator().addFieldComment(field, introspectedTable);
-
 			topLevelClass.addField(field);
 		}
 	}
 
+	// 不生成getter和setter
 	@Override
 	public boolean modelGetterMethodGenerated(Method method, TopLevelClass topLevelClass,
 			IntrospectedColumn introspectedColumn, IntrospectedTable introspectedTable,
