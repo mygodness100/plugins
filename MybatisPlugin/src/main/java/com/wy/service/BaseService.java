@@ -1,11 +1,11 @@
 package com.wy.service;
 
 /**
- * @description 
+ * @description
  * @author ParadiseWY
- * @date 2019年1月29日 下午5:12:03
+ * @date 2019年1月30日 下午2:58:18
  * @git {@link https://github.com/mygodness100}
  */
-public class TestService {
+public class BaseService<T> {
 
 }

@@ -16,7 +16,6 @@ import org.mybatis.generator.api.dom.java.JavaVisibility;
 import org.mybatis.generator.api.dom.java.Method;
 import org.mybatis.generator.api.dom.java.TopLevelClass;
 import org.mybatis.generator.internal.util.StringUtility;
-import org.springframework.util.StringUtils;
 
 /**
  * controller生成器
@@ -25,14 +24,15 @@ import org.springframework.util.StringUtils;
  */
 public class CrlPlugin extends PluginAdapter {
 
-	// 基础controller类
 	private String baseCrl;
-	// controller工程路径
 	private String targetProject;
-	// controller层包名
 	private String targetPackage;
-	// service 层包名
 	private String targetPackageService;
+
+	@Override
+	public boolean validate(List<String> warnings) {
+		return true;
+	}
 
 	/**
 	 * 取得配置文件中的值
@@ -41,10 +41,8 @@ public class CrlPlugin extends PluginAdapter {
 	public void setProperties(Properties properties) {
 		super.setProperties(properties);
 
-		String baseCrl = this.properties.getProperty("baseCrl");
-		if (StringUtility.stringHasValue(baseCrl)) {
-			this.baseCrl = baseCrl;
-		}
+		this.baseCrl = this.properties.getProperty("baseCrl");
+		this.targetPackageService = this.properties.getProperty("targetPackageService");
 
 		String targetProject = this.properties.getProperty("targetProject");
 		if (StringUtility.stringHasValue(targetProject)) {
@@ -59,21 +57,6 @@ public class CrlPlugin extends PluginAdapter {
 		} else {
 			throw new RuntimeException("controller 缺少必要的包路径");
 		}
-
-		String targetPackageService = this.properties.getProperty("targetPackageService");
-		if (StringUtility.stringHasValue(targetPackageService)) {
-			this.targetPackageService = targetPackageService;
-		} else {
-			throw new RuntimeException("service 缺少必要的包路径");
-		}
-	}
-
-	/**
-	 * 验证该文件是否可用
-	 */
-	@Override
-	public boolean validate(List<String> warnings) {
-		return true;
 	}
 
 	/**
@@ -83,40 +66,41 @@ public class CrlPlugin extends PluginAdapter {
 	public List<GeneratedJavaFile> contextGenerateAdditionalJavaFiles(
 			IntrospectedTable introspectedTable) {
 		List<GeneratedJavaFile> result = new ArrayList<GeneratedJavaFile>();
-		// 获取实体类
 		FullyQualifiedJavaType entityType = new FullyQualifiedJavaType(
 				introspectedTable.getBaseRecordType());
-		// 生成controller
-		TopLevelClass crlClass = new TopLevelClass(new FullyQualifiedJavaType(
+		TopLevelClass clazz = new TopLevelClass(new FullyQualifiedJavaType(
 				MessageFormat.format("{0}.{1}Crl", targetPackage, entityType.getShortName())));
-		crlClass.setVisibility(JavaVisibility.PUBLIC);
-		crlClass.addImportedType(entityType);
-		crlClass.addImportedType(new FullyQualifiedJavaType(
+		clazz.setVisibility(JavaVisibility.PUBLIC);
+		clazz.addImportedType(new FullyQualifiedJavaType(
 				"org.springframework.beans.factory.annotation.Autowired"));
-		crlClass.addImportedType(new FullyQualifiedJavaType(
+		clazz.addImportedType(new FullyQualifiedJavaType(
 				"org.springframework.web.bind.annotation.RequestMapping"));
-		crlClass.addImportedType(new FullyQualifiedJavaType(
+		clazz.addImportedType(new FullyQualifiedJavaType(
 				"org.springframework.web.bind.annotation.RestController"));
-		// 添加注解
-		crlClass.addAnnotation("@RestController");
-		crlClass.addAnnotation(MessageFormat.format("{0}(\"{1}\")", "@RequestMapping",
-				StringUtils.uncapitalize(entityType.getShortName())));
+		clazz.addAnnotation("@RestController");
+		clazz.addAnnotation(MessageFormat.format("{0}(\"{1}\")", "@RequestMapping",
+				(Character.toLowerCase(entityType.getShortName().charAt(0))
+						+ entityType.getShortName().substring(1))));
 		// 添加service
-		FullyQualifiedJavaType serviceType = new FullyQualifiedJavaType(MessageFormat
-				.format("{0}.{1}{2}", targetPackageService, entityType.getShortName(), "Service"));
-		crlClass.addImportedType(serviceType);
-		Field field = new Field(StringUtils.uncapitalize(serviceType.getShortName()), serviceType);
-		field.addAnnotation("@Autowired");
-		field.setVisibility(JavaVisibility.PRIVATE);
-		crlClass.addField(field);
-
-		// 基础crl类
-		FullyQualifiedJavaType baseCrlClass = null;
-		if (!StringUtils.isEmpty(baseCrl)) {
-			baseCrlClass = new FullyQualifiedJavaType(baseCrl);
+		FullyQualifiedJavaType serviceType = null;
+		if (StringUtility.stringHasValue(targetPackageService)) {
+			serviceType = new FullyQualifiedJavaType(MessageFormat.format(
+					"{0}.{1}{2}", targetPackageService, entityType.getShortName(), "Service"));
+			clazz.addImportedType(serviceType);
+			Field field = new Field((Character.toLowerCase(serviceType.getShortName().charAt(0))
+					+ serviceType.getShortName().substring(1)), serviceType);
+			field.addAnnotation("@Autowired");
+			field.setVisibility(JavaVisibility.PRIVATE);
+			clazz.addField(field);
+		}
+		// 添加父类
+		if (StringUtility.stringHasValue(baseCrl)) {
+			clazz.addImportedType(entityType);
+			FullyQualifiedJavaType baseCrlClass = new FullyQualifiedJavaType(baseCrl);
 			baseCrlClass.addTypeArgument(entityType);
-			crlClass.setSuperClass(baseCrlClass);
-			// 重写抽象方法
+			clazz.setSuperClass(baseCrlClass);
+			// mybatis的method方法无效,需要使用java自带的反射
+			// 自定义重写抽象方法,若没有则跳过,可改
 			java.lang.reflect.Method[] ms;
 			try {
 				ms = Class.forName(baseCrl).getMethods();
@@ -128,8 +112,10 @@ public class CrlPlugin extends PluginAdapter {
 						method.setReturnType(serviceType);
 						method.setName(m.getName());
 						method.addBodyLine("return "
-								+ StringUtils.uncapitalize(serviceType.getShortName()) + ";");
-						crlClass.addMethod(method);
+								+ (Character.toLowerCase(serviceType.getShortName().charAt(0))
+										+ serviceType.getShortName().substring(1))
+								+ ";");
+						clazz.addMethod(method);
 					}
 				}
 			} catch (SecurityException e) {
@@ -138,7 +124,7 @@ public class CrlPlugin extends PluginAdapter {
 				e.printStackTrace();
 			}
 		}
-		GeneratedJavaFile crlFile = new GeneratedJavaFile(crlClass, targetProject,
+		GeneratedJavaFile crlFile = new GeneratedJavaFile(clazz, targetProject,
 				new DefaultJavaFormatter());
 		result.add(crlFile);
 		return result;

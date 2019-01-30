@@ -6,16 +6,21 @@
 <generatorConfiguration>
 	<properties resource="generator/generator.properties" />
 
-	<context id="demo" defaultModelType="flat" targetRuntime="MyBatis3" >
+	<context id="demo" defaultModelType="flat" targetRuntime="MyBatis3Simple">
 
 		<property name="beginningDelimiter" value="`" />
 		<property name="endingDelimiter" value="`" />
+		<property name="schema" value="simpleoa" />
+		<property name="suppressDate" value="true" />
+		<property name="suppressAllComments" value="true" />
+		<property name="addRemarkComments" value="true" />
+		<property name="useEntitySwagger" value="true" />
 
 		<!-- 通用 Entity 插件 -->
 		<plugin type="com.wy.plugins.EntityPlugin">
-			<property name="usePersistence" value="${bean.usePersistence}" />
-			<!-- <property name="baseEntity" value="${base.entity}"/> -->
-			<property name="lombok" value="${lombok.type}" />
+			<property name="usePersistence" value="true" />
+			<property name="baseEntity" value="${base.entity}" />
+			<property name="lombok" value="simple" />
 			<property name="forceAnnotation" value="true" />
 		</plugin>
 
@@ -28,14 +33,15 @@
 
 		<!-- 生成 Service 类 -->
 		<plugin type="com.wy.plugins.ServicePlugin">
-			<!-- <property name="baseService" value="${base.service}" /> -->
+			<property name="baseService" value="${base.service}" />
 			<property name="targetProject" value="${target.project.main}" />
 			<property name="targetPackage" value="${target.package.service}" />
+			<property name="targetPackageMapper" value="${target.package.mapper}"/>
 		</plugin>
 
-		<!-- 生成controller的类 -->
+		<!-- 生成Controller的类 -->
 		<plugin type="com.wy.plugins.CrlPlugin">
-			<!-- <property name="baseCrl" value="${base.controller}" /> -->
+			<property name="baseCrl" value="${base.controller}" />
 			<property name="targetProject" value="${target.project.main}" />
 			<property name="targetPackage" value="${target.package.crl}" />
 			<property name="targetPackageService" value="${target.package.service}" />
@@ -45,11 +51,11 @@
 		<plugin type="com.wy.plugins.CommonPlugin" />
 
 		<!-- 读取数据库表的注释，生成 Model 的注释 -->
-		<commentGenerator type="com.wy.plugins.CommentPlugin"  />
+		<commentGenerator type="com.wy.plugins.CommentPlugin" />
 
 		<!-- 连接数据库配置 -->
 		<jdbcConnection driverClass="${jdbc.driverClass}"
-			connectionURL="${jdbc.url}" userId="${jdbc.user}" password="${jdbc.password}" />
+			connectionURL="${jdbc.url}" userId="${jdbc.username}" password="${jdbc.password}" />
 
 		<javaTypeResolver
 			type="org.mybatis.generator.internal.types.JavaTypeResolverDefaultImpl">

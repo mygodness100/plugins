@@ -1,11 +1,11 @@
 package com.wy.mappers;
 
 /**
- * @description 
+ * @description
  * @author ParadiseWY
- * @date 2019年1月29日 下午5:11:56
+ * @date 2019年1月30日 下午2:40:17
  * @git {@link https://github.com/mygodness100}
  */
-public class TestMapper {
+public interface BaseMapper<T> {
 
 }
