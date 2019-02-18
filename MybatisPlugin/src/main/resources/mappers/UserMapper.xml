@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wy.mapper.UserMapper">
+  <resultMap id="BaseResultMap" type="com.wy.model.User">
+    <id column="user_id" jdbcType="INTEGER" property="userId" />
+    <id column="username" jdbcType="VARCHAR" property="username" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="realname" jdbcType="VARCHAR" property="realname" />
+    <result column="depart_id" jdbcType="INTEGER" property="departId" />
+    <result column="idcard" jdbcType="VARCHAR" property="idcard" />
+    <result column="birthday" jdbcType="DATE" property="birthday" />
+    <result column="age" jdbcType="INTEGER" property="age" />
+    <result column="sex" jdbcType="VARCHAR" property="sex" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="salary" jdbcType="DECIMAL" property="salary" />
+    <result column="tel" jdbcType="VARCHAR" property="tel" />
+    <result column="state" jdbcType="TINYINT" property="state" />
+    <result column="user_icon" jdbcType="VARCHAR" property="userIcon" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="updatetime" jdbcType="TIMESTAMP" property="updatetime" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="map">
+    delete from ti_user
+    where user_id = #{userId,jdbcType=INTEGER}
+      and username = #{username,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" keyColumn="user_id" keyProperty="userId" parameterType="com.wy.model.User" useGeneratedKeys="true">
+    insert into ti_user (username, password, realname, 
+      depart_id, idcard, birthday, 
+      age, sex, address, 
+      email, salary, tel, 
+      state, user_icon, createtime, 
+      updatetime)
+    values (#{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{realname,jdbcType=VARCHAR}, 
+      #{departId,jdbcType=INTEGER}, #{idcard,jdbcType=VARCHAR}, #{birthday,jdbcType=DATE}, 
+      #{age,jdbcType=INTEGER}, #{sex,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}, 
+      #{email,jdbcType=VARCHAR}, #{salary,jdbcType=DECIMAL}, #{tel,jdbcType=VARCHAR}, 
+      #{state,jdbcType=TINYINT}, #{userIcon,jdbcType=VARCHAR}, #{createtime,jdbcType=TIMESTAMP}, 
+      #{updatetime,jdbcType=TIMESTAMP})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.wy.model.User">
+    update ti_user
+    set password = #{password,jdbcType=VARCHAR},
+      realname = #{realname,jdbcType=VARCHAR},
+      depart_id = #{departId,jdbcType=INTEGER},
+      idcard = #{idcard,jdbcType=VARCHAR},
+      birthday = #{birthday,jdbcType=DATE},
+      age = #{age,jdbcType=INTEGER},
+      sex = #{sex,jdbcType=VARCHAR},
+      address = #{address,jdbcType=VARCHAR},
+      email = #{email,jdbcType=VARCHAR},
+      salary = #{salary,jdbcType=DECIMAL},
+      tel = #{tel,jdbcType=VARCHAR},
+      state = #{state,jdbcType=TINYINT},
+      user_icon = #{userIcon,jdbcType=VARCHAR},
+      createtime = #{createtime,jdbcType=TIMESTAMP},
+      updatetime = #{updatetime,jdbcType=TIMESTAMP}
+    where user_id = #{userId,jdbcType=INTEGER}
+      and username = #{username,jdbcType=VARCHAR}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="map" resultMap="BaseResultMap">
+    select user_id, username, password, realname, depart_id, idcard, birthday, age, sex, 
+    address, email, salary, tel, state, user_icon, createtime, updatetime
+    from ti_user
+    where user_id = #{userId,jdbcType=INTEGER}
+      and username = #{username,jdbcType=VARCHAR}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select user_id, username, password, realname, depart_id, idcard, birthday, age, sex, 
+    address, email, salary, tel, state, user_icon, createtime, updatetime
+    from ti_user
+  </select>
+  <sql id="BaseColumns">
+    user_id,username,password,realname,depart_id,idcard,birthday,age,sex,address,email,salary,tel,state,user_icon,createtime,updatetime
+  </sql>
+</mapper>

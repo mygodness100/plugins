@@ -1,4 +1,4 @@
-package com.wy.mappers;
+package com.wy.mapper;
 
 /**
  * @description
