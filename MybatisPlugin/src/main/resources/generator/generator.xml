@@ -93,7 +93,10 @@
 
 		<!-- 连接数据库配置 -->
 		<jdbcConnection driverClass="${jdbc.driverClass}"
-			connectionURL="${jdbc.url}" userId="${jdbc.user}" password="${jdbc.password}" />
+			connectionURL="${jdbc.url}" userId="${jdbc.user}" password="${jdbc.password}" >
+			<!-- 必须添加,否则会生成其他数据库的同名表的文件 -->
+            <property name="nullCatalogMeansCurrent" value="true" />
+	   </jdbcConnection>
 
 		<!-- java类型处理器 用于处理DB中的类型到Java中的类型,默认使用JavaTypeResolverDefaultImpl; 注意一点,默认会先尝试使用Integer,Long,Short等来对应DECIMAL和 
 			NUMERIC数据类型; -->

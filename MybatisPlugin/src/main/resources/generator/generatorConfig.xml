@@ -36,7 +36,7 @@
 			<property name="baseService" value="${base.service}" />
 			<property name="targetProject" value="${target.project.main}" />
 			<property name="targetPackage" value="${target.package.service}" />
-			<property name="targetPackageMapper" value="${target.package.mapper}"/>
+			<property name="targetPackageMapper" value="${target.package.mapper}" />
 		</plugin>
 
 		<!-- 生成Controller的类 -->
@@ -54,8 +54,10 @@
 		<commentGenerator type="com.wy.plugins.CommentPlugin" />
 
 		<!-- 连接数据库配置 -->
-		<jdbcConnection driverClass="${jdbc.driverClass}"
-			connectionURL="${jdbc.url}" userId="${jdbc.username}" password="${jdbc.password}" />
+		<jdbcConnection driverClass="${jdbc.driverClass}" connectionURL="${jdbc.url}"
+			userId="${jdbc.username}" password="${jdbc.password}">
+			<property name="nullCatalogMeansCurrent" value="true" />
+		</jdbcConnection>
 
 		<javaTypeResolver
 			type="org.mybatis.generator.internal.types.JavaTypeResolverDefaultImpl">

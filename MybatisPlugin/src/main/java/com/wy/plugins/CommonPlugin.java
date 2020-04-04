@@ -86,8 +86,8 @@ public class CommonPlugin extends PluginAdapter {
 		configuration.setConfigurationType(CommentPlugin.class.getCanonicalName());
 		// 往注释插件中添加需要的属性
 		configuration.addProperty("suppressDate", this.context.getProperty("suppressDate"));
-		configuration.addProperty("suppressAllComments", this.context.getProperty("suppressDate"));
-		configuration.addProperty("addRemarkComments", this.context.getProperty("suppressDate"));
+		configuration.addProperty("suppressAllComments", this.context.getProperty("suppressAllComments"));
+		configuration.addProperty("addRemarkComments", this.context.getProperty("addRemarkComments"));
 		configuration.addProperty("useEntitySwagger", this.context.getProperty("useEntitySwagger"));
 		configuration.addProperty("baseEntity", this.context.getProperty("baseEntity"));
 		this.context.setCommentGeneratorConfiguration(configuration);
