@@ -181,6 +181,9 @@
 			<!-- SqlServer :相当于selectKey的SQL为:SELECT SCOPE_IDENTITY() -->
 			<!-- SYBASE :相当于selectKey的SQL为:SELECT @@IDENTITY -->
 			<!-- JDBC :相当于在生成的insert元素上添加useGeneratedKeys="true"和keyProperty属性 -->
+			<!-- identify属性:若为true,生成的selectKey元素将在插入后放置(对于标识列).若为false,则在插入前放置 -->
+			<!-- 当mysql需要生成uuid时,需要将sqlStatement设置为select replace(uuid(),'-','') from dual,idenfity设置为false -->
+			<!-- type属性:若指定,则此值将作为生成的selectKey元素的类型添加,此属性的值为before或after.若为此属性指定了值,则生成的selectkey元素将始终放置在insert语句之前 -->
 			<generatedKey column="role_id" sqlStatement="JDBC" />
 		</table>
 		<table tableName="ti_menu" domainObjectName="Menu" mapperName="Dao">
