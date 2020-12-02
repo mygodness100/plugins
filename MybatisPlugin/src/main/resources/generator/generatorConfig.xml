@@ -14,18 +14,26 @@
 		<property name="suppressDate" value="true" />
 		<property name="suppressAllComments" value="true" />
 		<property name="addRemarkComments" value="true" />
+		<!-- 是否添加注释 -->
+		<property name="addRemarkComments" value="true" />
+		<!-- 是否生成swagger2注解 -->
 		<property name="useEntitySwagger" value="true" />
 
-		<!-- 通用 Entity 插件 -->
-		<plugin type="com.wy.plugins.EntityPlugin">
-			<property name="usePersistence" value="true" />
+		<!-- 通用Model插件 -->
+		<plugin type="com.wy.plugins.ModelPlugin">
+			<property name="validModel" value="${valid.model}" />
+			<property name="validModelExample" value="${valid.model.example}" />
+			<property name="usePersistence" value="false" />
 			<property name="baseEntity" value="${base.entity}" />
-			<property name="lombok" value="simple" />
+			<property name="lombok" value="BUILDER" />
 			<property name="forceAnnotation" value="true" />
 		</plugin>
 
 		<!-- 通用 Mapper 插件 -->
 		<plugin type="com.wy.plugins.MapperPlugin">
+			<!-- 是否运行mapper接口以及xml生成类,有时候不需要重新生成mapper -->
+			<property name="validMapper" value="${valid.mapper}" />
+			<property name="validMapperXml" value="${valid.mapper.xml}" />
 			<property name="baseMappers" value="${base.mappers}" />
 			<property name="targetProject" value="${target.project.main}" />
 			<property name="targetPackage" value="${target.package.mappers}" />
@@ -33,7 +41,11 @@
 
 		<!-- 生成 Service 类 -->
 		<plugin type="com.wy.plugins.ServicePlugin">
+			<!-- 是否运行service生成类,有时候不需要重新生成service -->
+			<property name="validService" value="${valid.service}" />
+			<property name="validServiceImpl" value="${valid.service.impl}" />
 			<property name="baseService" value="${base.service}" />
+			<property name="baseServiceImpl" value="${base.service.impl}" />
 			<property name="targetProject" value="${target.project.main}" />
 			<property name="targetPackage" value="${target.package.service}" />
 			<property name="targetPackageMapper" value="${target.package.mapper}" />
@@ -41,6 +53,7 @@
 
 		<!-- 生成Controller的类 -->
 		<plugin type="com.wy.plugins.CrlPlugin">
+			<property name="validCrl" value="${valid.crl}" />
 			<property name="baseCrl" value="${base.controller}" />
 			<property name="targetProject" value="${target.project.main}" />
 			<property name="targetPackage" value="${target.package.crl}" />
@@ -58,11 +71,6 @@
 			userId="${jdbc.username}" password="${jdbc.password}">
 			<property name="nullCatalogMeansCurrent" value="true" />
 		</jdbcConnection>
-
-		<javaTypeResolver
-			type="org.mybatis.generator.internal.types.JavaTypeResolverDefaultImpl">
-			<property name="forceBigDecimals" value="false" />
-		</javaTypeResolver>
 
 		<javaModelGenerator targetPackage="${target.package.entity}"
 			targetProject="${target.project.main}">
@@ -101,6 +109,11 @@
 		<table tableName="ti_user" domainObjectName="User">
 			<generatedKey column="user_id" sqlStatement="JDBC" />
 		</table>
+		<!-- 自动从数据库中生成uuid赋值给VARCHAR类型主键 -->
+		<!-- <table tableName="ti_user" domainObjectName="User"> -->
+		<!-- <generatedKey column="user_id" -->
+		<!-- sqlStatement="select replace(uuid(),'-','') from dual" identity="false" /> -->
+		<!-- </table> -->
 		<table tableName="tr_role_button" domainObjectName="RoleButton">
 		</table>
 		<table tableName="tr_role_menu" domainObjectName="RoleMenu">
