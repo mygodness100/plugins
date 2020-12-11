@@ -57,6 +57,7 @@ public class ModelPlugin extends PluginAdapter {
 	public void setProperties(Properties properties) {
 		super.setProperties(properties);
 		schema = context.getProperty("schema");
+
 		usePersistence = StringUtility.isTrue(this.properties.getProperty("usePersistence"));
 		lombok = LombokType.valueOf(this.properties.getProperty("lombok", "none"));
 		baseEntity = this.properties.getProperty("baseEntity");
@@ -209,10 +210,10 @@ public class ModelPlugin extends PluginAdapter {
 			topLevelClass.addImportedType("lombok.ToString");
 			topLevelClass.addAnnotation("@Getter");
 			topLevelClass.addAnnotation("@Setter");
+			topLevelClass.addAnnotation("@Builder");
 			topLevelClass.addAnnotation("@ToString");
 			topLevelClass.addAnnotation("@NoArgsConstructor");
 			topLevelClass.addAnnotation("@AllArgsConstructor");
-			topLevelClass.addAnnotation("@Builder");
 			break;
 		default:
 			break;
