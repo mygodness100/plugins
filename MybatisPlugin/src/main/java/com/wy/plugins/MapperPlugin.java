@@ -47,10 +47,12 @@ public class MapperPlugin extends PluginAdapter {
 	@Override
 	public void setProperties(Properties properties) {
 		super.setProperties(properties);
-		validMapper = StringUtils.hasText(this.properties.getProperty("validMapper")) ? true
-				: Boolean.parseBoolean(this.properties.getProperty("validMapper"));
-		validMapperXml = StringUtils.hasText(this.properties.getProperty("validMapperXml")) ? true
-				: Boolean.parseBoolean(this.properties.getProperty("validMapperXml"));
+		validMapper = StringUtils.hasText(this.properties.getProperty("validMapper"))
+				? Boolean.parseBoolean(this.properties.getProperty("validMapper"))
+				: true;
+		validMapperXml = StringUtils.hasText(this.properties.getProperty("validMapperXml"))
+				? Boolean.parseBoolean(this.properties.getProperty("validMapperXml"))
+				: true;
 		String baseMappers = this.properties.getProperty("baseMappers");
 		if (StringUtility.stringHasValue(baseMappers)) {
 			Collections.addAll(this.baseMappers, baseMappers.split(","));
