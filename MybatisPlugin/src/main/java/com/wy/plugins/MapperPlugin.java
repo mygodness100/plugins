@@ -72,6 +72,9 @@ public class MapperPlugin extends PluginAdapter {
 	 */
 	@Override
 	public boolean sqlMapDocumentGenerated(Document document, IntrospectedTable introspectedTable) {
+		if (!validMapperXml) {
+			return validMapperXml;
+		}
 		// 生成批量新增inserts
 		XmlElement inserts = generateInserts(introspectedTable);
 		if (Objects.nonNull(inserts)) {

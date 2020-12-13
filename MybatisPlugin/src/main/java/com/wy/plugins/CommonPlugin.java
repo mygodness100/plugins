@@ -88,8 +88,9 @@ public class CommonPlugin extends PluginAdapter {
 		configuration.addProperty("suppressDate", this.context.getProperty("suppressDate"));
 		configuration.addProperty("suppressAllComments", this.context.getProperty("suppressAllComments"));
 		configuration.addProperty("addRemarkComments", this.context.getProperty("addRemarkComments"));
-		configuration.addProperty("useEntitySwagger", this.context.getProperty("useEntitySwagger"));
+		configuration.addProperty("supportSwagger2", this.context.getProperty("supportSwagger2"));
 		configuration.addProperty("baseEntity", this.context.getProperty("baseEntity"));
+		configuration.addProperty("tablePrefix", this.context.getProperty("tablePrefix"));
 		this.context.setCommentGeneratorConfiguration(configuration);
 		context.getJdbcConnectionConfiguration().addProperty("remarksReporting", "true");
 	}

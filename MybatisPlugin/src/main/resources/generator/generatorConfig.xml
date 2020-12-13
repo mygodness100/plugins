@@ -6,7 +6,7 @@
 <generatorConfiguration>
 	<properties resource="generator/generator.properties" />
 
-	<context id="demo" defaultModelType="flat" targetRuntime="MyBatis3Simple">
+	<context id="demo" defaultModelType="flat" targetRuntime="MyBatis3">
 
 		<property name="beginningDelimiter" value="`" />
 		<property name="endingDelimiter" value="`" />
@@ -16,8 +16,10 @@
 		<property name="addRemarkComments" value="true" />
 		<!-- 是否添加注释 -->
 		<property name="addRemarkComments" value="true" />
-		<!-- 是否生成swagger2注解 -->
-		<property name="useEntitySwagger" value="true" />
+		<!-- 是否使用swagger2注解 -->
+		<property name="supportSwagger2" value="true" />
+		<!-- 表通用前缀 -->
+		<property name="tablePrefix" value="${table.prefix}" />
 
 		<!-- 通用Model插件 -->
 		<plugin type="com.wy.plugins.ModelPlugin">

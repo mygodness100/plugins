@@ -21,7 +21,7 @@ import org.mybatis.generator.internal.util.StringUtility;
 public class CommentPlugin extends DefaultCommentGenerator {
 
 	/** 是否使用useSwagger生成文档 */
-	private boolean useEntitySwagger;
+	private boolean supportSwagger2;
 
 	/** 实体类是否需要继承基础类 */
 	private String baseEntity;
@@ -32,7 +32,7 @@ public class CommentPlugin extends DefaultCommentGenerator {
 
 	@Override
 	public void addConfigurationProperties(Properties properties) {
-		this.useEntitySwagger = StringUtility.isTrue(properties.getProperty("useEntitySwagger", ""));
+		this.supportSwagger2 = StringUtility.isTrue(properties.getProperty("supportSwagger2", ""));
 		this.baseEntity = properties.getProperty("baseEntity");
 		super.addConfigurationProperties(properties);
 	}
@@ -44,7 +44,7 @@ public class CommentPlugin extends DefaultCommentGenerator {
 	public void addFieldComment(Field field, IntrospectedTable introspectedTable,
 			IntrospectedColumn introspectedColumn) {
 		if (StringUtility.stringHasValue(introspectedColumn.getRemarks())) {
-			if (this.useEntitySwagger) {
+			if (this.supportSwagger2) {
 				field.addAnnotation("@ApiModelProperty(\"" + introspectedColumn.getRemarks() + "\")");
 			} else {
 				String[] remarks = introspectedColumn.getRemarks().split("\r\n");
@@ -56,16 +56,20 @@ public class CommentPlugin extends DefaultCommentGenerator {
 	}
 
 	/**
-	 * 给实体类加上注解,并且引入相关包
+	 * 给实体类加上注解,并且引入相关包,该方法中添加类注解无效
 	 */
 	@Override
 	public void addModelClassComment(TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
-		if (this.useEntitySwagger) {
+		if (this.supportSwagger2) {
 			// 可能会出现没有任何注释的表,此时会都引入,需手动删除
 			topLevelClass.addImportedType(new FullyQualifiedJavaType("io.swagger.annotations.ApiModelProperty"));
+			topLevelClass.addImportedType(new FullyQualifiedJavaType("io.swagger.annotations.ApiModel"));
 			if (StringUtility.stringHasValue(introspectedTable.getRemarks())) {
-				topLevelClass.addImportedType(new FullyQualifiedJavaType("io.swagger.annotations.ApiModel"));
-				topLevelClass.addAnnotation("@ApiModel(\"" + introspectedTable.getRemarks() + "\")");
+				topLevelClass.addAnnotation("@ApiModel(description = \"" + introspectedTable.getRemarks()
+						+ introspectedTable.getTableConfiguration().getTableName() + "\")");
+			} else {
+				topLevelClass.addAnnotation("@ApiModel(description = \""
+						+ introspectedTable.getTableConfiguration().getTableName() + "\")");
 			}
 		}
 		// 不使用generator自带的serializablePlugin插件是因为生成的字段都在类的最后,此处会生成为第一个字段
